@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrameShift - Prototipo Frame-Check</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --red-accent: #A61F26;
+            --green-structural: #2D5016;
+            --beige-light: #F9F6F2;
+            --beige-medium: #EFE9E0;
+            --brown-accent: #8B6F47;
+            --brown-dark: #5C4A36;
+            --neutral-dark: #1A1515;
+            --blue-info: #1E5A96;
+            --gray-border: #E0D7CE;
+            --text-main: #2A2420;
+            --text-secondary: #6B5D52;
+            --shadow-light: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-medium: 0 4px 16px rgba(0,0,0,0.12);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--beige-light);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Crimson Text', serif;
+            line-height: 1.2;
+        }
+
+        h1 { font-size: 48px; font-weight: 700; }
+        h2 { font-size: 36px; font-weight: 700; }
+        h3 { font-size: 20px; font-weight: 700; }
+
+        /* HEADER */
+        .header {
+            background: white;
+            padding: 14px 24px;
+            border-bottom: 1px solid var(--gray-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-light);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logo-container:hover { opacity: 0.85; }
+
+        .logo-img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--brown-dark);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--brown-dark);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #4a3a2a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(92, 74, 54, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--brown-dark);
+            border: 1px solid var(--gray-border);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--beige-medium);
+            border-color: var(--brown-accent);
+        }
+
+        .btn-cta {
+            background: linear-gradient(135deg, var(--brown-dark), #4a3a2a);
+            color: white;
+            padding: 16px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 16px rgba(92, 74, 54, 0.25);
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(92, 74, 54, 0.35);
+        }
+
+        /* SCREEN CONTAINER */
+        .screen {
+            display: none;
+            min-height: calc(100vh - 68px);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* HOME SCREEN */
+        .screen-home {
+            justify-content: center;
+            align-items: center;
+            padding: 60px 24px;
+            background: linear-gradient(135deg, #F9F6F2 0%, #EFE9E0 100%);
+        }
+
+        .hero-content {
+            max-width: 750px;
+            text-align: center;
+        }
+
+        .hero-logo {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 36px;
+            object-fit: contain;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .hero-content h1 {
+            margin-bottom: 8px;
+            color: var(--brown-dark);
+        }
+
+        .hero-content .tagline {
+            font-size: 16px;
+            color: var(--brown-accent);
+            margin-bottom: 28px;
+            font-style: italic;
+            font-family: 'Crimson Text', serif;
+        }
+
+        .hero-content p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .hero-content p strong { color: var(--text-main); }
+
+        .hero-cta {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        /* HOW SCREEN */
+        .screen-how {
+            padding: 60px 24px;
+            background-color: var(--beige-light);
+        }
+
+        .how-header {
+            max-width: 900px;
+            margin: 0 auto 60px;
+            text-align: center;
+        }
+
+        .how-header h2 {
+            margin-bottom: 16px;
+            color: var(--brown-dark);
+        }
+
+        .how-header p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .how-steps {
+            max-width: 1000px;
+            margin: 0 auto 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+        }
+
+        .step-card {
+            background: white;
+            padding: 36px 28px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-light);
+            border-top: 4px solid var(--brown-accent);
+            transition: var(--transition);
+        }
+
+        .step-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .step-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--brown-dark);
+            margin-bottom: 12px;
+        }
+
+        .step-card h3 {
+            font-size: 18px;
+            margin-bottom: 14px;
+            color: var(--text-main);
+        }
+
+        .step-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .how-benefits {
+            background: white;
+            padding: 48px;
+            border-radius: 8px;
+            max-width: 1000px;
+            margin: 0 auto 60px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .how-benefits h3 {
+            margin-bottom: 28px;
+            color: var(--brown-dark);
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+        }
+
+        .benefit-item {
+            padding: 20px;
+            background: linear-gradient(135deg, #F9F6F2, #EFE9E0);
+            border-radius: 6px;
+            border-left: 3px solid var(--brown-accent);
+        }
+
+        .benefit-item strong {
+            display: block;
+            color: var(--brown-dark);
+            margin-bottom: 8px;
+        }
+
+        .benefit-item p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .how-cta {
+            text-align: center;
+            padding: 40px 24px;
+        }
+
+        /* ARTICLE SCREEN */
+        .screen-article {
+            padding: 48px 24px;
+            background-color: var(--beige-light);
+        }
+
+        .article-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 48px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-medium);
+            border-top: 4px solid var(--red-accent);
+        }
+
+        .article-header { margin-bottom: 32px; }
+
+        .article-badges {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .article-source {
+            background-color: var(--beige-medium);
+            color: var(--brown-dark);
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .article-badge {
+            background-color: var(--red-accent);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .article-title {
+            margin-bottom: 16px;
+            color: var(--neutral-dark);
+        }
+
+        .article-meta {
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--gray-border);
+            margin-bottom: 32px;
+        }
+
+        .article-body {
+            font-size: 16px;
+            line-height: 1.85;
+            color: var(--text-main);
+        }
+
+        .article-body p { margin-bottom: 18px; }
+
+        .pathological-term {
+            background-color: #FFF8E1;
+            padding: 3px 6px;
+            border-bottom: 2px dashed var(--red-accent);
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 2px;
+            font-weight: 600;
+        }
+
+        .pathological-term:hover {
+            background-color: #FFE8E8;
+            border-bottom-color: var(--red-accent);
+            transform: scale(1.02);
+        }
+
+        .counter-badge {
+            background: linear-gradient(135deg, var(--red-accent), #8B1F26);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 32px;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(161, 31, 38, 0.2);
+        }
+
+        /* ALERT SCREEN */
+        .screen-alert {
+            justify-content: center;
+            align-items: center;
+            background-color: var(--beige-light);
+            padding: 40px 24px;
+        }
+
+        .alert-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 2000;
+            backdrop-filter: blur(2px);
+        }
+
+        .alert-box {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 520px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            text-align: center;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-icon { font-size: 56px; margin-bottom: 20px; }
+
+        .elm-badge {
+            display: inline-block;
+            background-color: #FF9500;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .alert-box h2 {
+            font-size: 26px;
+            margin-bottom: 16px;
+            color: var(--red-accent);
+        }
+
+        .alert-box p {
+            color: var(--text-secondary);
+            margin-bottom: 18px;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .alert-term {
+            background: linear-gradient(135deg, var(--red-accent), #8B1F26);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            margin: 20px 0;
+            font-size: 17px;
+        }
+
+        .alert-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        /* DEFRAMING SCREEN */
+        .screen-deframing {
+            padding: 48px 24px;
+            background-color: var(--beige-light);
+        }
+
+        .deframing-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 36px;
+        }
+
+        .deframing-text {
+            background: white;
+            padding: 48px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-medium);
+            border-top: 4px solid var(--green-structural);
+        }
+
+        .deframing-text h2 {
+            margin-bottom: 28px;
+            color: var(--brown-dark);
+        }
+
+        .deframing-text p {
+            font-size: 16px;
+            line-height: 1.85;
+            margin-bottom: 18px;
+            color: var(--text-main);
+        }
+
+        .structural-term {
+            background-color: #E8F5E9;
+            padding: 3px 6px;
+            border-left: 3px solid var(--green-structural);
+            font-weight: 700;
+            color: var(--green-structural);
+            border-radius: 2px;
+        }
+
+        .vera-vox-box {
+            background: white;
+            border-left: 5px solid var(--blue-info);
+            padding: 32px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-medium);
+            position: sticky;
+            top: 100px;
+        }
+
+        .vera-vox-box h3 {
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--blue-info);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .vera-vox-box h3::before { content: "📊"; font-size: 18px; }
+
+        .data-item {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--gray-border);
+        }
+
+        .data-item:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .data-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--blue-info);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .data-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .data-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .resource-box {
+            background: linear-gradient(135deg, #FFFBF0, #FFF8E1);
+            border: 1px solid #FFD966;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+        .resource-box strong {
+            display: block;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .resource-box p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0 0 8px 0;
+        }
+
+        .resource-phone {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--red-accent);
+            margin: 12px 0;
+        }
+
+        @media (max-width: 1024px) {
+            .deframing-container { grid-template-columns: 1fr; }
+            .vera-vox-box { position: static; order: -1; }
+        }
+
+        /* OUTPUT SCREEN */
+        .screen-output {
+            justify-content: center;
+            align-items: center;
+            padding: 60px 24px;
+            background-color: var(--beige-light);
+        }
+
+        .output-card {
+            background: white;
+            padding: 60px;
+            border-radius: 12px;
+            max-width: 620px;
+            text-align: center;
+            box-shadow: var(--shadow-medium);
+            border-top: 5px solid var(--green-structural);
+            animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .output-icon {
+            font-size: 88px;
+            margin-bottom: 28px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .output-card h1 {
+            margin-bottom: 16px;
+            color: var(--green-structural);
+        }
+
+        .output-card .subtitle {
+            font-size: 17px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            font-style: italic;
+            line-height: 1.8;
+            font-family: 'Crimson Text', serif;
+        }
+
+        .impact-text {
+            background-color: var(--beige-medium);
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 36px;
+            color: var(--text-main);
+            font-size: 14px;
+            line-height: 1.8;
+            border-left: 4px solid var(--green-structural);
+        }
+
+        .output-buttons {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 1900;
+            display: none;
+        }
+
+        .modal-backdrop.active { display: block; }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 36px; }
+            h2 { font-size: 28px; }
+            .screen-home { padding: 40px 20px; }
+            .hero-logo { width: 120px; height: 120px; margin-bottom: 28px; }
+            .hero-content p { font-size: 14px; }
+            .article-container { padding: 24px; }
+            .article-title { font-size: 26px; }
+            .article-body { font-size: 15px; }
+            .alert-box { padding: 28px; }
+            .alert-box h2 { font-size: 22px; }
+            .output-card { padding: 32px; }
+            .output-icon { font-size: 72px; }
+            .how-steps { gap: 24px; }
+            .how-benefits { padding: 28px; }
+            .deframing-text { padding: 24px; }
+            .vera-vox-box { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo-container" onclick="goToScreen('home')">
+        <img src="https://i.ibb.co/r2CX9Pqf/frameshift-logo-rotated-1.png" alt="FrameShift Logo" style="width: 45px; height: 45px; cursor: pointer; object-fit: contain;">
+        <span class="logo-text">FrameShift</span>
+    </div>
+    <div class="nav-buttons">
+        <button class="btn btn-secondary" onclick="goToScreen('home')">Home</button>
+        <button class="btn btn-secondary" onclick="goToScreen('how')">Come Funziona</button>
+        <button class="btn btn-primary" onclick="goToScreen('article')">Demo</button>
+    </div>
+</div>
+
+<!-- HOME SCREEN -->
+<div class="screen screen-home active" id="screen-home">
+    <div class="hero-content">
+        <img src="https://i.ibb.co/r2CX9Pqf/frameshift-logo-rotated-1.png" alt="FrameShift" style="width: 160px; height: 160px; object-fit: contain;" class="hero-logo">
+        <h1>FrameShift</h1>
+        <p class="tagline">Dalla percezione alla consapevolezza</p>
+        <p><strong>Trasforma il linguaggio della violenza di genere</strong></p>
+        <p>FrameShift è uno strumento innovativo che rileva il linguaggio patologico nei media sulla violenza di genere e lo trasforma in informazione strutturale, consapevole e responsabile. Un'applicazione pratica della teoria Goffmaniana e del modello ELM al giornalismo etico.</p>
+        <div class="hero-cta">
+            <button class="btn btn-cta" onclick="goToScreen('how')">📚 Scopri Come Funziona</button>
+            <button class="btn btn-cta" onclick="goToScreen('article')">▶️ Prova la Demo</button>
+        </div>
+    </div>
+</div>
+
+<!-- HOW IT WORKS SCREEN -->
+<div class="screen" id="screen-how">
+    <div class="how-header">
+        <h2>Come Funziona FrameShift</h2>
+        <p>Un metodo scientifico per trasformare il frame narrativo sulla violenza di genere. FrameShift applica tre framework teorici principali per guidare la consapevolezza del lettore verso un'interpretazione strutturale della realtà.</p>
+    </div>
+
+    <div class="how-steps">
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <h3>🔍 Rileva il Frame Patologico</h3>
+            <p><strong>Keying Goffmaniano:</strong> FrameShift identifica quando il linguaggio psicologizza la violenza anziché strutturarla. Termini come "raptus", "amore malato", "gelosia" trasformano un femminicidio in "dramma passionale".</p>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">2</div>
+            <h3>⚠️ Allerta (Via Periferica ELM)</h3>
+            <p><strong>Elaboration Likelihood Model:</strong> Un alert visivo colpisce l'attenzione del lettore con segnali emotivi e simbolici. Non è persuasione razionale, ma uno stimolo a notare il frame distorto.</p>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <h3>📊 De-framing Strutturale (Via Centrale)</h3>
+            <p><strong>Frame Alignment di Snow:</strong> La riscrittura presenta dati, norme e contesti verificabili. Il lettore elabora razionalmente la realtà strutturale della violenza di genere.</p>
+        </div>
+
+        <div class="step-card">
+            <div class="step-number">4</div>
+            <h3>✨ Consapevolezza Consapevole</h3>
+            <p><strong>Outcome:</strong> Il lettore pratica il framing strutturale, internalizzando un nuovo modo di interpretare la violenza di genere coerente con il Manifesto di Venezia e l'etica giornalistica.</p>
+        </div>
+    </div>
+
+    <div class="how-benefits">
+        <h3>Perché FrameShift è importante</h3>
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <strong>🎯 Per i Giornalisti</strong>
+                <p>Strumento di auto-verifica del linguaggio. Favorisce l'aderenza al Manifesto di Venezia e alle linee guida contro la violenza di genere.</p>
+            </div>
+            <div class="benefit-item">
+                <strong>👁️ Per i Lettori</strong>
+                <p>Consapevolezza critica. Riconosce come il frame linguistico influenza l'interpretazione della realtà.</p>
+            </div>
+            <div class="benefit-item">
+                <strong>🏛️ Per le Istituzioni</strong>
+                <p>Supporto alla cultura del rispetto. Riduce la narrazione stigmatizzante della violenza di genere nei media.</p>
+            </div>
+            <div class="benefit-item">
+                <strong>📚 Per l'Accademia</strong>
+                <p>Applicazione pratica della teoria. Goffman, ELM e frame analysis diventano strumenti operativi nel giornalismo.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="how-cta">
+        <button class="btn btn-cta" onclick="goToScreen('article')">▶️ Vedi la Demo in Azione</button>
+    </div>
+</div>
+
+<!-- ARTICLE SCREEN -->
+<div class="screen" id="screen-article">
+    <div class="article-container">
+        <div class="article-header">
+            <div class="article-badges">
+                <span class="article-source">📰 Corriere della Sera | Repubblica</span>
+                <span class="article-badge">⚠️ FRAME PATOLOGICO</span>
+            </div>
+            <h1 class="article-title">"Era un bravo ragazzo": il femminicidio che sconvolge l'università</h1>
+            <div class="article-meta">
+                Redazione | 20 Novembre 2024 | Ispirato dal caso Giulia Cecchettin
+            </div>
+        </div>
+
+        <div class="article-body">
+            <p>Un episodio drammatico di <span class="pathological-term" onclick="showAlert('passione finita male')">passione finita male</span> ha portato alla morte di una giovane studentessa universitaria. Il giovane, conosciuto dai compagni come un <span class="pathological-term" onclick="showAlert('ragazzo per bene')">ragazzo per bene</span> e laureando promettente, sarebbe stato colto da un improvviso <span class="pathological-term" onclick="showAlert('raptus di rabbia')">raptus di rabbia</span> dopo la rottura della relazione.</p>
+
+            <p>Secondo le ricostruzioni investigative, la relazione era caratterizzata da episodi di <span class="pathological-term" onclick="showAlert('gelosia ossessiva')">gelosia ossessiva</span> e da quella che gli esperti definiscono come una forma di <span class="pathological-term" onclick="showAlert('dipendenza affettiva')">dipendenza affettiva</span> patologica. Testimoni riferiscono di <span class="pathological-term" onclick="showAlert('comportamenti di controllo')">comportamenti di controllo</span> intensificatisi nei giorni precedenti al fatto, mentre la giovane viveva in uno stato di crescente apprensione e paura.</p>
+
+            <p>La comunità universitaria è profondamente sconvolta. Amici dell'autore lo descrivono come "<span class="pathological-term" onclick="showAlert('un ragazzo che non ce l\'ha fatta')">un ragazzo che non ce l'ha fatta</span>" di fronte alle pressioni della situazione. Nel frattempo, esperti di psicologia commentano il "dramma della coppia moderna" e gli analisti sociali dibattono su come "<span class="pathological-term" onclick="showAlert('amore e odio')">amore e odio</span>" possono convivere nei giovani.</p>
+        </div>
+
+        <div class="counter-badge">🔍 8 espressioni patologiche rilevate — Clicca per attivare l'analisi</div>
+    </div>
+</div>
+
+<!-- ALERT SCREEN -->
+<div class="screen" id="screen-alert" style="display: none;">
+    <div class="modal-backdrop active"></div>
+    <div class="alert-overlay">
+        <div class="alert-box">
+            <div class="alert-icon">⚠️</div>
+            <span class="elm-badge">ELM — Via Periferica</span>
+            <h2>Linguaggio Patologico Rilevato</h2>
+            <p>Il termine evidenziato rappresenta un <strong>frame psicologizzante</strong> che devia l'attenzione dalla <strong>responsabilità strutturale</strong> verso spiegazioni individuali e psicologiche.</p>
+            <div class="alert-term" id="alert-term-display">raptus di follia</div>
+            <p><strong>Effetto del keying patologico:</strong> Naturalizza la violenza come "momento di debolezza" o "perdita di controllo improvviso", anziché come atto consapevole di dominio e violenza di genere.</p>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 16px;"><em>Secondo Goffman, il keying reinterpreta il significato della realtà: trasforma un omicidio in un "dramma passionale".</em></p>
+            <div class="alert-buttons">
+                <button class="btn btn-secondary" onclick="goToScreen('article')">Torna</button>
+                <button class="btn btn-primary" onclick="goToScreen('deframing')">Scopri il Frame Strutturale →</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DEFRAMING SCREEN -->
+<div class="screen" id="screen-deframing" style="display: none;">
+    <div class="deframing-container">
+        <div class="deframing-text">
+            <h2>✓ Il Frame Strutturale</h2>
+            <p>Un <span class="structural-term">atto di violenza pianificato e consapevole</span> ha tragicamente portato alla morte di una giovane donna. L'autore ha esercitato sistematicamente <span class="structural-term">controllo coercitivo, possessività patologica e violenza fisica</span> in una relazione caratterizzata da <span class="structural-term">dinamiche di potere asimmetriche</span> e da molteplici indicatori di abuso.</p>
+
+            <p>Secondo i dati ISTAT e la letteratura criminologica internazionale, questo rappresenta un caso paradigmatico di <span class="structural-term">femminicidio</span>: omicidio di una donna motivato dal suo genere e dal rifiuto del diritto di autodeterminazione della vittima. L'atto non è frutto di passione spontanea o debolezza psicologica momentanea, bensì di scelte consapevoli, premeditabili e orientate al dominio.</p>
+
+            <p>Le istituzioni riconoscono che la <span class="structural-term">violenza di genere è un fenomeno strutturale</span> radicato nelle disuguaglianze di potere. Richiede intervento multidimensionale: cambiamento culturale, educazione di genere, supporto istituzionale alle vittime, e responsabilizzazione dei perpetratori.</p>
+        </div>
+
+        <div class="vera-vox-box">
+            <h3>Il Frame Strutturale — Vera Vox</h3>
+
+            <div class="data-item">
+                <div class="data-label">ISTAT 2024 — Prevalenza</div>
+                <div class="data-value">31,9%</div>
+                <div class="data-description">Donne italiane (16-75 anni) che hanno subito violenza fisica o sessuale almeno una volta nella vita</div>
+            </div>
+
+            <div class="data-item">
+                <div class="data-label">ISTAT 2024 — Femminicidi</div>
+                <div class="data-value">106</div>
+                <div class="data-description">Donne uccise nel 2024 in Italia, rappresentando il 91,4% di tutti gli omicidi di donne</div>
+            </div>
+
+            <div class="data-item">
+                <div class="data-label">Contesto Relazionale</div>
+                <div class="data-value">80+%</div>
+                <div class="data-description">Femminicidi commessi da partner, ex-partner o familiari — perpetuatori noti nel 92,2% dei casi</div>
+            </div>
+
+            <div class="resource-box">
+                <strong>🔗 Fondamenti Normativi e Deontologici</strong>
+                <p><strong>Legge 119/2013</strong> – Disposizioni in materia di femminicidio e violenza di genere (art. 582-583 c.p.)</p>
+                <p><strong>Manifesto di Venezia</strong> – Raccomandazioni deontologiche per la copertura etica della violenza di genere nei media</p>
+                <p><strong>Numero Antiviolenza Nazionale:</strong></p>
+                <div class="resource-phone">1522</div>
+                <p>Gratuito 24/7 — Ascolto, consulenza, informazioni su centri antiviolenza territoriali</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OUTPUT SCREEN -->
+<div class="screen" id="screen-output" style="display: none;">
+    <div class="output-card">
+        <div class="output-icon">✨</div>
+        <h1>Grazie per la Consapevolezza</h1>
+        <p class="subtitle">"Il linguaggio è il primo spazio di libertà. Usarlo in modo consapevole è un atto di responsabilità verso chi non c'è più."</p>
+        
+        <div class="impact-text">
+            Hai appena praticato il <strong>framing strutturale</strong>. Riconoscere il linguaggio patologico sulla violenza di genere e trasformarlo in narrazione consapevole è un gesto di <strong>giornalismo etico</strong>, coerente con il <strong>Manifesto di Venezia</strong> e con le politiche regionali di contrasto alla violenza sulle donne.
+        </div>
+
+        <div class="output-buttons">
+            <button class="btn btn-primary" onclick="goToScreen('home')">← Torna a Home</button>
+            <button class="btn btn-secondary" onclick="goToScreen('article')">Prova di Nuovo</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function goToScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(el => {
+            el.classList.remove('active');
+            el.style.display = 'none';
+        });
+
+        const targetScreen = document.getElementById(`screen-${screenId}`);
+        if (targetScreen) {
+            targetScreen.classList.add('active');
+            targetScreen.style.display = 'flex';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function showAlert(term) {
+        document.getElementById('alert-term-display').innerText = term;
+        goToScreen('alert');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('✓ FrameShift - 6 Schermate Complete');
+    });
+</script>
+
+</body>
+</html>
